@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Creating &amp; Designing Objects in Modern JS</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+# Creating &amp; Designing Objects in Modern JS
+**By Will Hastings**
+
+???
+
+* Me: Web Dev, Horizontal
+
+---
+
+# Concerns
+
+* Architectural Flexibility
+* Robust APIs &amp; Encapsulation
+* Ease of Use
+* Performance
+
+???
+
+* Want to avoid rigid relationships between types.
+* Want to create encapsulated modules w/ robust APIs.
+* Want it all to be easy, terse
+* Don't want to sacrifice performance
+
+---
+
+# Architectural Flexibility
+
+* Avoid deep, inflexible inheritance hierarchies
+* Keep code modular, decoupled
+* Respect Open/Closed
+
+???
+
+---
+
+# Robust APIs and Encapsulation
+
+* Clear public interface
+* Hidden implementation
+
+???
+
+* Want our public methods to be clear/descriptive
+* Want our implementation details hidden so user isn't concerned w/ them
+
+---
+
+# Ease of Use
+
+* Want a pattern or API that is concise and easy to use.
+* i.e. not this:
+
+```javascript
+var Dialog = ...;
+
+var Modal = function(title, body) {
+  this.title = title;
+  this.body = body;
+};
+
+Modal.prototype = Object.create(Dialog.prototype);
+
+Modal.prototype.open = function() {
+  // ...
+};
+
+Modal.prototype.close = function() {
+  // ...
+};
+```
+
+---
+
+# Performance
+
+* We don't want it to suffer.
+* But we don't want to sacrifice power for premature optimizations
+* Consider alternatives before restricting your object-creation strategy
+  (e.g. object pools).
+
+>*...if you're only creating a few objects (and by that, I mean 100 or less),
+the performance of creating them is basically irrelevant.  If you’ve been led
+to believe you need to use prototype, new, and class style coding in JS to get
+maximum object creation performance for just a couple of objects, you need to
+set such silliness aside.* -- Kyle Simpson, [Sanity Check: Object Creation
+Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
+
+---
+
+# Ways to Create and Design Objects
+
+* Prototypal Inheritance
+  * Constructors vs. `Object.create()`
+* Concatenative Inheritance (Mixins)
+  * Classical vs. Concatenative
+* Encapsulation Patterns
+
+---
+
+# Prototypal
+
+* Usually used in manner following classical inheritance
+* But there are other patterns that prototypes enable
+  * e.g. **OLOO** (Objects Linked to Other Objects)
+
+???
+
+* Create instances from a type
+
+---
+
+# Constructors
+
+* Require use of `new` or internal check.
+
+---
+
+# `Object.create()`
+
+* Create object with prototype as any other object.
+* Initialization can be captured in method on prototype.
+* Can wrap `Object.create()` and init call in a factory function.
+
+```javascript
+var Dialog = {
+  init: function(title, body) {
+    this.title = title;
+    // ...
+  },
+  open: function() {
+    // ...
+  }
+};
+var createDialog = function(body, title) {
+  var dialog = Object.create(Dialog);
+  dialog.init(body, title);
+  return dialog;
+}
+```
+
+???
+
+* Factory doesn't need `new`
+
+---
+
+# Concatenative Inheritance
+
+* Extending type or instance with properties from multiple source types or objects.
+* a.k.a. Mixins
+* Avoids perils of classical, single-inheritance hierarchies
+* Takes advantage of JS's *dynamic runtime object extension*
+* Gives power of another full language feature like Ruby's modules or Scala's traits
+
+---
+
+# Encapsulation Patterns
+
+## Underscore Convention
+
+???
+
+* How do we hide internals implementation details and keep public API clean?
+
+---
+
+## Closure-Based
+
+???
+
+* Bestows true privacy to state and implementation methods
+* Hard to distinguish free variables from
+* Inheritance is off the table?
+
+## Closured-Methods Only
+
+???
+
+* Doesn't protect state
+* Requires remembering to use `call()`
+
+# Implementations
+
+* Resig Inheritance
+* Stampit
+* Fiber
+* ES6 Classes
+* Protomatter.js (plug of debatable shamefulness)
+
+---
+
+# Resources
+
+## Libraries
+
+* [Stampit](https://github.com/ericelliott/stampit)
+* [Fiber](https://github.com/linkedin/Fiber)
+* [Protomatter.js](https://github.com/whastings/protomatter.js)
+
+## Articles
+
+* [Sanity Check: Object Creation Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
+* [Three Different Kinds Of Prototypal OO](http://ericleads.com/2013/02/fluent-javascript-three-different-kinds-of-prototypal-oo/)
+* [JS Objects: De"construct"ion](http://davidwalsh.name/javascript-objects-deconstruction)
+
+    </textarea>
+    <script src="remark.min.js"></script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
