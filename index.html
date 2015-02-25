@@ -15,22 +15,21 @@ class: center, middle
 ???
 
 * Me: Web Dev, Horizontal
+* Talk about:
+  * What factors play into how we create and design objects
+  * What patterns exist for creating objects and implementing inheritance
+  * How can we work w/ JS to create robust OO architectures?
+  * What implementations are out there?
 
 ---
 
+class: center, middle
 # Concerns
-
-* Architectural Flexibility
-* Robust APIs &amp; Encapsulation
-* Ease of Use
-* Performance
 
 ???
 
-* Want to avoid rigid relationships between types.
-* Want to create encapsulated modules w/ robust APIs.
-* Want it all to be easy, terse
-* Don't want to sacrifice performance
+* What do we care about when choosing how to create and design objects?
+* Goals?
 
 ---
 
@@ -38,21 +37,31 @@ class: center, middle
 
 * Avoid deep, inflexible inheritance hierarchies
 * Keep code modular, decoupled
-* Respect Open/Closed
+* Respect Open/Closed Principle
 
 ???
+
+* Want to avoid rigid relationships between types.
+* Want to avoid *tight coupling* between types and instances.
+* Want types/modules *open for extension*, but *closed for modification*
+* Terminology: Types instead of classes
 
 ---
 
 # Robust APIs and Encapsulation
 
 * Clear public interface
-* Hidden implementation
+* Ability to write small, composable types/modules that *do one thing*
+* Hidden implementation details
 
 ???
 
 * Want our public methods to be clear/descriptive
+* Want API easy to use
+* Want composing code to be easy
+  * Maintable code = small, decoupled modules composed together to create more complex functionality
 * Want our implementation details hidden so user isn't concerned w/ them
+  * Or tempted to mess w/ them
 
 ---
 
@@ -80,6 +89,12 @@ Modal.prototype.close = function() {
 };
 ```
 
+???
+
+* Terse
+* Low overhead
+* Simple
+
 ---
 
 # Performance
@@ -87,7 +102,7 @@ Modal.prototype.close = function() {
 * We don't want it to suffer.
 * But we don't want to sacrifice power for premature optimizations
 * Consider alternatives before restricting your object-creation strategy
-  (e.g. object pools).
+  (e.g. [object pools][pools]).
 
 >*...if you're only creating a few objects (and by that, I mean 100 or less),
 the performance of creating them is basically irrelevant.  If you’ve been led
@@ -96,38 +111,158 @@ maximum object creation performance for just a couple of objects, you need to
 set such silliness aside.* -- Kyle Simpson, [Sanity Check: Object Creation
 Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
 
----
-
-# Ways to Create and Design Objects
-
-* Prototypal Inheritance
-  * Constructors vs. `Object.create()`
-* Concatenative Inheritance (Mixins)
-  * Classical vs. Concatenative
-* Encapsulation Patterns
-
----
-
-# Prototypal
-
-* Usually used in manner following classical inheritance
-* But there are other patterns that prototypes enable
-  * e.g. **OLOO** (Objects Linked to Other Objects)
+[pools]: http://beej.us/blog/data/object-pool/
 
 ???
 
-* Create instances from a type
+* Won't focus on this too much
+* Other goals vs. performance
+* My take:
+  * Choose pattern that helps you write best code
+  * If usage/profiling shows real perf problem
+    * Try alternative techniques
+    * Change only objects that need max perf
 
 ---
 
-# Constructors
+class: center, middle
 
+# Creation and Design Patterns
+
+???
+
+* Look at some patterns and discuss their pros and cons regarding our concerns
+
+---
+
+# Prototypal Inheritance
+
+* Usually used in manner following classical inheritance
+* But there are other patterns that prototypes enable
+  * e.g. [**OLOO**][oloo] (Objects Linked to Other Objects), a.k.a **Behavior Delegation**
+* Implemented via constructors or `Object.create()`
+* Some argue [it's behavior delegation, not inheritance][js_obj_article].
+
+[oloo]: https://github.com/getify/You-Dont-Know-JS/blob/master/this%20&amp;%20object%20prototypes/ch6.md
+[js_obj_article]: http://davidwalsh.name/javascript-objects
+
+???
+
+* Classical: Create instances from a prototype
+* Won't go into OLOO, but you should check it out
+
+---
+
+# Prototypal Inheritance
+## Constructors
+
+.col-half[
+```javascript
+var Dialog = function(title, body) {
+  this.title = title;
+  this.body = body;
+};
+
+Dialog.prototype.close = function() {
+  // ...
+};
+
+Dialog.prototype.open = function() {
+  // ...
+};
+
+var dialog = new Dialog(
+  'Profile',
+  renderedTemplate
+);
+```
+]
+
+.col-half[
 * Require use of `new` or internal check.
+* Add extra step to reach prototype object (`.prototype`).
+* Encourage dev to think in classical mindset.
+* Obscure prototypal mechanism that JS actually uses.
+* That said, are usually best optimized (e.g. [V8 hidden classes][v8])
+]
+
+[v8]: http://mrale.ph/blog/2014/07/30/constructor-vs-objectcreate.html
+
+???
+
+* If you forget `new` and not in strict mode, instance props go on `window`
+* Constructors make themselves look more important that prototypes
+  * But prototypes are what matter after an object is created
+* All honesty: I don't like constructors
+* Prefer to work directly with prototype objects
+* Perf tests will show they're fastest
+  * But does that matter?
 
 ---
 
-# `Object.create()`
+# Prototypal Inheritance
+## Constructors
 
+.col-two-third[
+```javascript
+function inherit(child, parent) {
+  function Surrogate() {}
+  Surrogate.prototype = parent.prototype;
+  child.prototype = new Surrogate();
+  child.prototype.constructor = parent;
+}
+
+var SlidingDialog = function(title, body) {
+  Dialog.call(this, title, body);
+  // ...
+};
+
+inherit(SlidingDialog, Dialog);
+// OR: SlidingDialog.prototype =
+//     Object.create(Dialog.prototype);
+
+SlidingDialog.prototype.open = function() {
+  Dialog.prototype.open.call(this);
+  // ...
+};
+```
+]
+
+.col-one-third[
+* Here's how we do inheritance.
+* Too manual.
+* Mimicks classical inheritance.
+* Calling super is ugly and unwieldy.
+]
+
+---
+
+# Prototypal Inheritance
+## Constructors
+
+*The real problem is that using constructors will almost always get you stuck
+thinking in classical OO mode. The constructor becomes analogous to a class.* --
+Eric Elliott, Programming JavaScript Applications
+
+*Constructors violate the open/closed principle because they couple all callers
+to the details of how your object gets instantiated.* -- Eric Elliott, The Two
+Pillars of JavaScript, Part 1
+
+*JavaScript doesn’t need constructor functions because any function can return a
+new object. With dynamic object extension, object literals and
+`Object.create()`, we have everything we need — with none of the mess.* -- Eric
+Elliott, The Two Pillars of JavaScript, Part 1
+
+*it's only objects, linked to other objects. That's really all JS has.* -- Kyle
+Simpson, JS Objects: De"construct"ion
+
+---
+
+# Prototypal Inheritance
+## `Object.create()`
+
+* Work directly with prototype objects.
+* Cooperate with JS's prototypal nature.
 * Create object with prototype as any other object.
 * Initialization can be captured in method on prototype.
 * Can wrap `Object.create()` and init call in a factory function.
@@ -155,6 +290,34 @@ var createDialog = function(body, title) {
 
 ---
 
+# Prototypal Inheritance
+## `Object.create()` Inheritance
+
+```javascript
+var SlidingDialog = Object.create(Dialog);
+
+SlidingDialog.init = function(title, body) {
+  Dialog.init.call(this, title, body);
+};
+
+SlidingDialog.open = function() {
+  Dialog.open.call(this);
+  // ...
+};
+
+SlidingDialog.close = function() {
+  // ...
+};
+```
+
+???
+
+* Simpler than constructor inheritance
+* Still some boilerplate
+* Super-style calls aren't that much better
+
+---
+
 # Concatenative Inheritance
 
 * Extending type or instance with properties from multiple source types or objects.
@@ -162,41 +325,212 @@ var createDialog = function(body, title) {
 * Avoids perils of classical, single-inheritance hierarchies
 * Takes advantage of JS's *dynamic runtime object extension*
 * Gives power of another full language feature like Ruby's modules or Scala's traits
+* Just needs a simple function like `_.extend()`
+* Can be combined with prototypal inheritance.
+
+>*Single-­parent hierarchies are rarely capable of describing all possible use
+cases. Eventually, all hierarchies are "wrong" for new uses &mdash; a problem that
+necessitates code duplication.* -- Eric Elliott, Programming JavaScript
+Applications
+
+---
+
+# Concatenative Inheritance
+
+.col-half[
+```javascript
+var Commentable = {
+  addComment: function(comment) {
+    // ...
+  },
+  numComments: function() {
+    // ...
+  }
+};
+
+var Likeable = {
+  isLiked: function() {
+    // ...
+  },
+  like: function() {
+    // ...
+  }
+};
+```
+]
+
+.col-half[
+```javascript
+var Post = {
+  init: function(title, body) {
+    // ...
+  },
+  save: function() {
+    // ...
+  }
+  // ...
+}
+
+_.extend(Post, Commentable, Likeable);
+```
+]
 
 ---
 
 # Encapsulation Patterns
 
-## Underscore Convention
+* Keep public API clean.
+* Hide implementation details.
+* Encourage intended use.
 
 ???
 
 * How do we hide internals implementation details and keep public API clean?
+* JS's lack of private properties and methods has always bothered me
+* Having private state and methods visible makes objects harder to use
+  * e.g. property list in debugger
 
 ---
 
+# Encapsulation Patterns
+## Underscore Convention
+
+.col-half[
+```javascript
+Dialog = {
+  // ...
+  open: function() {
+    this._animate();
+    // ...
+  },
+  // ...
+  _animate: function() {
+    // ...
+  }
+};
+```
+]
+
+.col-half[
+* Have to remember to prefix all private method names w/ underscore
+* Not true encapsulation, just a convention
+* Arguably unattractive
+]
+
+---
+
+# Encapsulation Patterns
 ## Closure-Based
 
-???
+.col-half[
+```javascript
+function createDialog(title, body) {
+  var open = false;
 
+  function init() {
+    // ...
+  }
+
+  function animate() {
+    // ...
+  }
+
+  function open() {
+    open = true
+    // ...
+  }
+
+  // ...
+
+  init();
+
+  // Public API:
+  return {
+    close: close,
+    open: open
+  };
+};
+```
+]
+
+.col-half[
 * Bestows true privacy to state and implementation methods
-* Hard to distinguish free variables from
+* Object only exists to hold public methods
+* But hard to distinguish free variables from local variables
 * Inheritance is off the table?
+]
 
+---
+
+# Encapsulation Patterns
 ## Closured-Methods Only
 
+.col-half[
+```javascript
+window.Dialog = (function() {
+  var Dialog = {
+    init: function(el) {
+      this.el = el;
+      // ...
+    },
+    // ...
+    open: function() {
+      // Invoke with current context.
+      animate.call(this);
+    },
+    // ...
+  };
+
+  function animate() {
+    var el = this.el;
+    // ...
+  }
+
+  return Dialog;
+}());
+```
+]
+
+.col-half[
+* Gives truly private methods
+* But doesn't protect state
+* Requires remembering to use `call()` for private methods.
+]
+
 ???
 
-* Doesn't protect state
-* Requires remembering to use `call()`
+* An approach I've been favoring recently
+
+---
+
+class: center, middle
 
 # Implementations
 
-* Resig Inheritance
-* Stampit
-* Fiber
-* ES6 Classes
-* Protomatter.js (plug of debatable shamefulness)
+???
+
+* Look at implementations and what concerns they address
+
+---
+
+# Resig Inheritance
+
+---
+
+# Stampit
+
+---
+
+# Fiber
+
+---
+
+# ES6 Classes
+
+---
+
+# Protomatter.js
+**(plug of debatable shamefulness)**
 
 ---
 
@@ -210,9 +544,11 @@ var createDialog = function(body, title) {
 
 ## Articles
 
+* [Simple JavaScript Inheritance (Resig Inheritance)](http://ejohn.org/blog/simple-javascript-inheritance/)
 * [Sanity Check: Object Creation Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
 * [Three Different Kinds Of Prototypal OO](http://ericleads.com/2013/02/fluent-javascript-three-different-kinds-of-prototypal-oo/)
 * [JS Objects: De"construct"ion](http://davidwalsh.name/javascript-objects-deconstruction)
+* [The Two Pillars of JavaScript, Part 1](https://medium.com/javascript-scene/the-two-pillars-of-javascript-ee6f3281e7f3)
 
     </textarea>
     <script src="remark.min.js"></script>

@@ -1,0 +1,44 @@
+class contributes to the ongoing confusion of "class" in JavaScript that has
+plagued the language for nearly two decades. In some respects, it asks more
+questions than it answers, and it feels like a very unnatural fit on top of the
+elegant simplicity of the [[Prototype]] mechanism.
+--Kyle Simpson, this and Object Prototypes
+
+JavaScript's object system is so powerful and expressive that most of the
+complexity in common OO patterns melts away when you reproduce them in
+JavaScript. You simply don't need all of the common cruft to accomplish the
+stated goals.
+--Eric Elliott, Programming JavaScript Applications
+
+Inheritance is the tightest coupling available in OO design. Descendant classes
+have an intimate knowledge of their ancestor classes.
+--Eric Elliott, Programming JavaScript Applications
+
+Single­parent hierarchies are rarely capable of describing all possible use
+cases. Eventually, all hierarchies are "wrong" for new uses ­ a problem that
+necessitates code duplication.
+--Eric Elliott, Programming JavaScript Applications
+
+Deep inheritance trees are brittle, inflexible, and difficult to extend.
+--Eric Elliott, Programming JavaScript Applications
+
+The real problem is that using constructors will almost always get you stuck
+thinking in classical OO mode. The constructor becomes analogous to a class.
+--Eric Elliott, Programming JavaScript Applications
+
+A stamp is a factory function that has public properties that specify a
+delegate prototype, default instance state, and a function that sets up
+encapsulation for object instances.
+--Eric Elliott, Programming JavaScript Applications
+
+it's only objects, linked to other objects. That's really all JS has.
+--Kyle Simpson, JS Objects: De"construct"ion
+
+Constructors violate the open/closed principle because they couple all callers
+to the details of how your object gets instantiated.
+--Eric Elliott, The Two Pillars of JavaScript, Part 1
+
+JavaScript doesn’t need constructor functions because any function can return a
+new object. With dynamic object extension, object literals and
+`Object.create()`, we have everything we need — with none of the mess.
+--Eric Elliott, The Two Pillars of JavaScript, Part 1
