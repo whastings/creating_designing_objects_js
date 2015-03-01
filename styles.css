@@ -3,10 +3,23 @@
 @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
 body { font-family: 'Droid Serif'; }
+
+a,
+a:visited,
+a:active {
+  color: #0791d6;
+  text-decoration: none;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
 h1, h2, h3 {
   font-family: 'Yanone Kaffeesatz';
   font-weight: normal;
 }
+
 .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
 
 .remark-slide-content h1 {
@@ -17,6 +30,14 @@ h1, h2, h3 {
   margin: 0;
 }
 
+.slide-short {
+  padding-top: 20%;
+}
+
+.slide-short li {
+  font-size: 150%;
+}
+
 .container:before,
 .container:after {
   content: " ";
@@ -24,6 +45,14 @@ h1, h2, h3 {
 }
 .container:after {
   clear: both;
+}
+
+.container.code {
+  background-color: #f0f0f0;
+}
+
+.container.code pre {
+  margin: 5px 0;
 }
 
 .col-one-third {
@@ -42,4 +71,8 @@ h1, h2, h3 {
 .col-half,
 .col-two-third {
   float: left;
+}
+
+.pre-no-margin pre {
+  margin: 0;
 }
