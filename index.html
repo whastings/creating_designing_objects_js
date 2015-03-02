@@ -12,14 +12,16 @@ class: center, middle
 # Creating &amp; Designing Objects in Modern JS
 **By Will Hastings**
 
-Follow along: go/creating_designing_objects_js
+Follow along: [go/creating_designing_objects_js][slides]
+
+[slides]: http://go/creating_designing_objects_js
 
 ???
 
 * Me: Web Dev, Horizontal
 * Talk about:
-  * What factors play into how we create and design objects
-  * What patterns exist for creating objects and implementing inheritance
+  * What concerns rely on how we create and design objects
+  * What patterns exist for creating objects and accomplishing inheritance
   * How can we work w/ JS to create robust OO architectures?
   * What implementations are out there?
 
@@ -32,6 +34,7 @@ class: center, middle
 
 * What do we care about when choosing how to create and design objects?
 * Goals?
+* Important to recognize these first before choosing
 
 ---
 
@@ -45,7 +48,7 @@ class: slide-short
 ???
 
 * Want to avoid rigid relationships between types.
-* Want to avoid *tight coupling* between types and instances.
+* Want to avoid *tight coupling* between types and between instances.
 * Want types/modules *open for extension*, but *closed for modification*
 * Terminology: Types instead of classes
 
@@ -126,6 +129,8 @@ Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
   * If usage/profiling shows real perf problem
     * Try alternative techniques
     * Change only objects that need max perf
+* Quote: People get hung up on benchmarks (JSPerf)
+  * Really, difference may only be nanoseconds
 
 ---
 
@@ -153,7 +158,15 @@ class: center, middle
 ???
 
 * Classical: Create instances from a prototype
-* Won't go into OLOO, but you should check it out
+* OLOO
+  * Coined by Kyle Simpson
+  * Says objects aren't parent and children but peers
+  * They delegate amongst themselves using the prototype mechanism
+  * You should check it out
+* Behavior Delegation: Inheritance is copying from parent to child, and
+  delegation is the reverse
+  * Plays in to OLOO
+  * My opinion: Still works for types/instances
 
 ---
 
@@ -187,6 +200,7 @@ var dialog = new Dialog(
 * Add extra step to reach prototype object (`.prototype`).
 * Encourage dev to think in classical mindset.
 * Obscure prototypal mechanism that JS actually uses.
+* Verbose.
 * That said, are usually best optimized (e.g. [V8 hidden classes][v8])
 ]
 
@@ -194,10 +208,11 @@ var dialog = new Dialog(
 
 ???
 
+* All honesty: I don't like constructors
+* They are the traditional way of creating types
 * If you forget `new` and not in strict mode, instance props go on `window`
 * Constructors make themselves look more important that prototypes
   * But prototypes are what matter after an object is created
-* All honesty: I don't like constructors
 * Prefer to work directly with prototype objects
 * Perf tests will show they're fastest
   * But does that matter?
@@ -238,6 +253,11 @@ SlidingDialog.prototype.open = function() {
 * Calling super is ugly and unwieldy.
 ]
 
+???
+
+* `inherit()` is way to set up inheritance in ES before 5
+* Can use `Object.create()` in ES5+
+
 ---
 
 # Prototypal Inheritance
@@ -262,6 +282,16 @@ Simpson, [JS Objects: De"construct"ion][deconstruction]
 [pja]: http://shop.oreilly.com/product/0636920033141.do
 [two_pillars]: https://medium.com/javascript-scene/the-two-pillars-of-javascript-ee6f3281e7f3
 [deconstruction]: http://davidwalsh.name/javascript-objects-deconstruction
+
+???
+
+* Constructors added to JS to resemble classical languages
+* Eric Elliott, Interesting argument: Constructors force caller to use `new`
+  * Can't refactor easily
+* Also argues: Constructors are superfluous because any function can return new
+  object
+* Kyle Simpson sums up JS's true nature: Objects linked to objects
+  * Also, to great graphs: constructors vs. `Object.create()`
 
 ---
 
@@ -293,6 +323,12 @@ var createDialog = function(body, title) {
 
 ???
 
+* Work with prototypes: pass one in, get instance back out
+* Reveals how JS's prototypal mechanism instead of hiding it
+* Flexible: Any object can be a prototype
+* Can add regular method to do work of constructor `init()`
+* Can wrap instantiation details in factory function
+  * Could be creating new object, or using a pool, etc.
 * Factory doesn't need `new`
 
 ---
@@ -319,7 +355,7 @@ SlidingDialog.close = function() {
 
 ???
 
-* Simpler than constructor inheritance
+* Simpler and more concise than constructor inheritance
 * Still some boilerplate
 * Super-style calls aren't that much better
 
@@ -341,9 +377,22 @@ cases. Eventually, all hierarchies are "wrong" for new uses &mdash; a problem th
 necessitates code duplication.* -- Eric Elliott, [Programming JavaScript
 Applications][pja]
 
+???
+
+* Fancy term for what we know of as mixins
+* Copy props from one more more objects to another
+* Because JS has dynamic object extension (define), you can use a pattern
+  that is a whole feature in other languages
+* Works hand-in-hand with prototypal inheritance
+* Quote: Single inheritance is too rigid
+  * Sometimes, you have set of concerns that applies horizontally across
+    multiple types
+
 ---
 
 # Concatenative Inheritance
+
+## Example
 
 .container.code[
 .col-half[
@@ -385,6 +434,13 @@ _.extend(Post, Commentable, Likeable);
 ]
 ]
 
+???
+
+* Two horizontal concerns:
+  * Many types can be Commentable
+  * Many types can be Likeable
+* When working directly w/ prototypes, easy to mix in
+
 ---
 
 class: slide-short
@@ -397,7 +453,7 @@ class: slide-short
 ???
 
 * How do we hide internals implementation details and keep public API clean?
-* JS's lack of private properties and methods has always bothered me
+* How to deal w/ JS's lack of private properties and methods
 * Having private state and methods visible makes objects harder to use
   * e.g. property list in debugger
 
@@ -427,6 +483,12 @@ Dialog = {
 * Not true encapsulation, just a convention
 * Arguably unattractive
 ]
+
+???
+
+* Just a convention, no real language semantics
+* Dev has to remember
+* Personally, find it ugly
 
 ---
 
@@ -471,6 +533,15 @@ function createDialog(title, body) {
 * How to use with inheritance and mixins?
 ]
 
+???
+
+* Tends to be most common way of implementing privacy and encapsulation
+* Use closure to hide private state variables and private functions
+* Return object with only public methods
+* Issues:
+  * Free variables hard to distinguish
+  * Unclear how inheritance or mixins would work
+
 ---
 
 # Encapsulation Patterns
@@ -513,6 +584,8 @@ window.Dialog = (function() {
 ???
 
 * An approach I've been favoring recently
+* Only protects methods, giving clean API
+* Having to add `.call(this)` for each private function is annoying
 
 ---
 
@@ -522,7 +595,7 @@ class: center, middle
 
 ???
 
-* Look at implementations and what concerns they address
+* End by looking at implementations out there and what concerns they address
 
 ---
 
@@ -564,8 +637,10 @@ var slidingDialog = new SlidingDialog(
 
 ???
 
-* Dated: Posted in 2008
-* Very seated in classical OO mindset
+* Class utility w/ extend method
+* Adds `extend()` to each "class" created so they can be further extended
+* Provides nifty `_super()` method for calling same method further up
+  inheritance chain
 
 ---
 
@@ -573,69 +648,26 @@ var slidingDialog = new SlidingDialog(
 
 .col-half[
 ## Pros
-* Supports `super`
+* Easy `super` calls
 * Easy "subclassing" with `.extends()`
 ]
 
 .col-half[
 ## Cons
+* Very classically-oriented
 * Instantiating requires `new`
 * No real state or method privacy
 * No built-in support for Concatenative Inheritance
 ]
 
----
+???
 
-# Stampit
-
-**[github.com/ericelliott/stampit][stampit]**
-
-```javascript
-var dialog = stampit()
-  .state({
-    el: null,
-    title: 'Dialog' // Default value.
-  })
-  .methods({
-    setTitle: function(title) {
-      this.title = title;
-    }
-  })
-  .enclose(function() {
-    var open = false;
-
-    return stampit.mixIn(this, {
-      close: function() {
-        open = false;
-      },
-      isOpen: function() {
-        return open;
-      },
-      open: function() {
-        open = true;
-        // ...
-      }
-    })
-  });
-```
-
-[stampit]: https://github.com/ericelliott/stampit
-
----
-
-# Stampit
-
-.col-half[
-## Pros
-* Supports concatenative, prototypal, and functional inheritance
-* Produces factory functions (no need for `new`)
-]
-
-.col-half[
-## Cons
-* Unorthodox API
-* Steeper learning curve
-]
+* Good pioneer for creation/inheritance implementation
+* Easy super and `extends()`
+* Dated: Posted in 2008
+* Very seated in classical OO mindset
+* Need `new`
+* No mixins
 
 ---
 
@@ -696,6 +728,12 @@ var slidingDialog = new SlidingDialog(
 
 [fiber]: https://github.com/linkedin/Fiber
 
+???
+
+* `Fiber.extend()` takes function to return prototype properties
+* Adds `extend()` to type to created derived types
+* Passes `base` in for easy super access
+
 ---
 
 # Fiber
@@ -712,6 +750,11 @@ var slidingDialog = new SlidingDialog(
 * No built-in mechanism for private state and methods
 ]
 ---
+
+???
+
+* Has mixins and decorators
+* But no privacy
 
 # ES6 Classes
 
@@ -764,6 +807,14 @@ var slidingDialog = new SlidingDialog(
 
 [es6classes]: http://www.2ality.com/2015/02/es6-classes-final.html
 
+???
+
+* Have as implementation, but keep in mind it's now a standard
+* New keywords (`class`, `extends`, `super`)
+* Initialization done in special constructor method
+* Can call "superclass" constructor w/ `super()`
+* Can call method of "superclass" w/ `super.method()`
+
 ---
 
 # ES6 Classes
@@ -785,6 +836,87 @@ var slidingDialog = new SlidingDialog(
 * No mechanism for making state or methods private
 * Constructors require `new`
 ]
+
+???
+
+* Nice syntax
+* Looks familiar to devs coming from classical languages like Java
+* Adds native support for features that were previously hand-implemented
+* Easy super calls
+* But not real classes
+* Hard to use now because of lack of native support and transpile-able features
+* No privacy
+
+---
+
+# Stampit
+
+**[github.com/ericelliott/stampit][stampit]**
+
+```javascript
+var dialog = stampit()
+  .state({
+    el: null,
+    title: 'Dialog' // Default value.
+  })
+  .methods({
+    setTitle: function(title) {
+      this.title = title;
+    }
+  })
+  .enclose(function() {
+    var open = false;
+
+    return stampit.mixIn(this, {
+      close: function() {
+        open = false;
+      },
+      isOpen: function() {
+        return open;
+      },
+      open: function() {
+        open = true;
+        // ...
+      }
+    })
+  });
+```
+
+[stampit]: https://github.com/ericelliott/stampit
+
+???
+
+* Stamps are factory functions created from `stampit()` invocation
+* Public methods attached to prototype (`.methods()`)
+* State w/ default values copied in on instantiation (`.state()`)
+* Private state and methods achieved through closures with *privileged methods*
+  attached to instance
+
+---
+
+# Stampit
+
+.col-half[
+## Pros
+* Supports [concatenative, prototypal, and functional inheritance][three_kinds_oo]
+* Produces factory functions (no need for `new`)
+* Can compose stamps together with `stampit.compose()`
+]
+
+.col-half[
+## Cons
+* Unorthodox API
+* Steeper learning curve
+]
+
+[three_kinds_oo]: http://ericleads.com/2013/02/fluent-javascript-three-different-kinds-of-prototypal-oo/
+
+???
+
+* Supports three types of inheritance
+  * Functional inheritance: Not real inheritance, but does allow for
+    encapsulation
+* Great library, but harder to learn
 ---
 
 # Protomatter.js
@@ -849,6 +981,21 @@ console.log(slidingDialog.slideClass); // undefined
 ```
 ]
 
+???
+
+* `Protomatter.create()` takes props and returns new prototype object
+* Prototype has `create()` method for producing instances
+* Prototype has `extend()` for creating new prototypes in the chain
+* Has `callSuper()` as a moderately easy/elegant way of invoking method from prototype
+  higher in the chain
+* You've noticed how I keep mentioning lack of privacy:
+  * Is protomatter's selling point
+  * Any property added to `this` is inaccessible from outside own methods
+  * Methods placed under `private` are inaccessible from outside own methods
+  * Magic: Two objects created
+    * One w/ public methods, returned to the outside
+    * One w/ private state props and methods
+
 ---
 
 # Protomatter.js
@@ -864,10 +1011,17 @@ console.log(slidingDialog.slideClass); // undefined
 ## Cons
 * [Privacy magic][protomatter_privacy] increases runtime complexity
 * Possible performance hit
-
 ]
 
 [protomatter_privacy]: http://objectdotcreate.net/implementing-object-privacy-protomatter-js.html
+
+???
+
+* This project represents my ideal way of doing OO in JS
+* Get true privacy w/o downsides of manual closures
+* But privacy magic adds complexity (e.g. wrapper functions in call stack)
+* Haven't run perf tests yet, but definitely will be on the slow side
+  * Again, how much does that matter
 
 ---
 
@@ -883,7 +1037,7 @@ console.log(slidingDialog.slideClass); // undefined
 
 * [Simple JavaScript Inheritance (Resig Inheritance)](http://ejohn.org/blog/simple-javascript-inheritance/)
 * [Sanity Check: Object Creation Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
-* [Three Different Kinds Of Prototypal OO](http://ericleads.com/2013/02/fluent-javascript-three-different-kinds-of-prototypal-oo/)
+* [Three Different Kinds Of Prototypal OO][three_kinds_oo]
 * [JS Objects: De"construct"ion](http://davidwalsh.name/javascript-objects-deconstruction)
 * [The Two Pillars of JavaScript, Part 1](https://medium.com/javascript-scene/the-two-pillars-of-javascript-ee6f3281e7f3)
 * [Implementing Object Privacy in Protomatter.js][protomatter_privacy]
