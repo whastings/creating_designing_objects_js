@@ -1,0 +1,21 @@
+{
+  "name": "creating_designing_objects_js",
+  "version": "1.0.0",
+  "description": "Presentation",
+  "main": " ",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitli.corp.linkedin.com:whastings-stuff/creating_designing_objects_js.git"
+  },
+  "author": "Will Hastings <whastings@linkedin.com>",
+  "license": "None",
+  "dependencies": {
+    "stampit": "^1.1.0"
+  }
+}
