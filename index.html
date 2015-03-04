@@ -20,116 +20,32 @@ Follow along: [go/creating_designing_objects_js][slides]
 
 * Me: Web Dev, Horizontal
 * In this talk:
-  * Concerns involved
+  * Problems w/ traditional approach
+  * Better strategies
   * Patterns: Creating/structuring objs; inheritance
   * Implementations
 
 ---
 
-class: center, middle
-# Concerns
+class: slide-med
+# Traditional JS OO
+
+* Model types like classes with constructors
+* Reuse code with single-parent inheritance hierarchies
+* But prototypal inheritance with constructors is outdated
+* Only using single-parent inheritance limits code reuse
+* No use of encapsulation beyond convention
 
 ???
 
-* What matters?
-* Goals?
-* Recognize these first
-
----
-
-class: slide-short
-# Architectural Flexibility
-
-* Avoid deep, inflexible inheritance hierarchies
-* Keep code modular, decoupled
-* Respect Open/Closed Principle
-
-???
-
-* Avoid rigid relationships
-* Avoid tight coupling
-* *Open for extension*, but *closed for modification*
-* Terminology: Types instead of classes
-
----
-
-class: slide-short
-# Robust APIs and Encapsulation
-
-* Clear public interface
-* Ability to write small, composable types/modules that *do one thing*
-* Hidden implementation details
-
-???
-
-* Public methods: clear and descriptive
-* API: Easy
-* Code: composable, maintainable
-* Implementation details: hidden
-
----
-
-# Ease of Use
-
-* Want a pattern or API that is concise and easy to use
-* i.e. better than this:
-
-```javascript
-var Dialog = ...;
-
-var Modal = function(title, body) {
-  this.title = title;
-  this.body = body;
-};
-
-Modal.prototype = Object.create(Dialog.prototype);
-
-Modal.prototype.open = function() {
-  // ...
-};
-
-Modal.prototype.close = function() {
-  // ...
-};
-```
-
-???
-
-* Pattern/implementation:
-  * Terse
-  * Low overhead
-  * Simple
-* Not typical constructors
-
----
-
-# Performance
-
-* We don't want it to suffer
-* But we don't want to sacrifice power for premature optimizations
-* Consider alternatives before restricting your object-creation strategy
-  (e.g. [object pools][pools]).
-
->*...if you're only creating a few objects (and by that, I mean 100 or less),
-the performance of creating them is basically irrelevant.  If you've been led
-to believe you need to use prototype, new, and class style coding in JS to get
-maximum object creation performance for just a couple of objects, you need to
-set such silliness aside.* -- Kyle Simpson, [Sanity Check: Object Creation
-Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
-
-[pools]: http://beej.us/blog/data/object-pool/
-
-???
-
-* Want good performance
-* Performance conflicts w/ other goals
-* My take:
-  * Choose best
-  * If usage/profiling = problem
-    * Try alternative (e.g. object pool)
-    * Change only crucial objects
-* Quote: People get hung up on benchmarks (JSPerf)
-  * Difference = nanoseconds
+* Traditional way
+  * Constructors
+  * Single-parent inheritance
+* Better way than constructors
+* Single parent = rigid hierarchies
+* No privary for
+  * State
+  * Implementation
 
 ---
 
@@ -140,37 +56,13 @@ class: center, middle
 ???
 
 * Look at patterns
-* Discuss pros/cons
+* Start with traditional
+* Then alternatives
+* Discuss improvements
 
 ---
 
-# Prototypal Inheritance
-
-* Usually used in manner following classical inheritance
-* But there are other architectures that prototypes enable
-  * e.g. [**OLOO**][oloo] (Objects Linked to Other Objects)
-* Implemented via constructors or `Object.create()`
-* Some argue [it's behavior delegation, not inheritance][js_obj_article]
-
-[oloo]: https://github.com/getify/You-Dont-Know-JS/blob/master/this%20&amp;%20object%20prototypes/ch6.md
-[js_obj_article]: http://davidwalsh.name/javascript-objects
-
-???
-
-* Use mechanism built in
-* Usually classical: Types + instances
-* Other architectures: OLOO
-  * Peers, not parent/children
-  * Delegate w/ prototype chain
-* NOTE: Prototypes = behavior delegation, not inheritance
-  delegation is the reverse
-  * Missing prop: delegate to prototype
-  * Not copy
-
----
-
-# Prototypal Inheritance
-## Constructors
+# Constructors
 
 .col-half[
 ```javascript
@@ -219,8 +111,8 @@ var dialog = new Dialog(
 
 ---
 
-# Prototypal Inheritance
-## Constructors: Inheritance
+# Constructors
+## Inheritance
 
 .col-two-third[
 ```javascript
@@ -262,8 +154,7 @@ SlidingDialog.prototype.open = function() {
 
 ---
 
-# Prototypal Inheritance
-## Constructors
+# Constructors
 
 *The real problem is that using constructors will almost always get you stuck
 thinking in classical OO mode. The constructor becomes analogous to a class.* --
@@ -274,12 +165,7 @@ to the details of how your object gets instantiated.* -- Eric Elliott, [The Two
 Pillars of JavaScript, Part 1][two_pillars]
 
 *JavaScript doesn't need constructor functions because any function can return a
-new object. With dynamic object extension, object literals and
-`Object.create()`, we have everything we need — with none of the mess.* -- Eric
-Elliott, [The Two Pillars of JavaScript, Part 1][two_pillars]
-
-*it's only objects, linked to other objects. That's really all JS has.* -- Kyle
-Simpson, [JS Objects: De"construct"ion][deconstruction]
+new object.* -- Eric Elliott, [The Two Pillars of JavaScript, Part 1][two_pillars]
 
 [pja]: http://shop.oreilly.com/product/0636920033141.do
 [two_pillars]: https://medium.com/javascript-scene/the-two-pillars-of-javascript-ee6f3281e7f3
@@ -294,8 +180,7 @@ Simpson, [JS Objects: De"construct"ion][deconstruction]
 
 ---
 
-# Prototypal Inheritance
-## `Object.create()`
+# `Object.create()`
 
 .col-half[
 ```javascript
@@ -339,8 +224,8 @@ function createDialog(el) {
 
 ---
 
-# Prototypal Inheritance
-## `Object.create()` Inheritance
+# `Object.create()`
+## Inheritance
 
 ```javascript
 var SlidingDialog = Object.create(Dialog);
@@ -1002,6 +887,23 @@ console.log(slidingDialog.animate); // undefined
 
 ---
 
+class: slide-short
+# Conclusion
+
+* Newer, better ways to create and design objects
+* Concatenative Inheritance can yield more maintainable and usable code
+* Encapsulation is important, even in JS
+
+???
+
+* Shown constructor alternatives
+* Touch on Concatenative
+  * We should use it more
+* Encapsulation importance and supporting patterns/implementations
+  * We should find a pattern/implementation
+
+---
+
 # Resources
 
 ## Libraries
@@ -1012,7 +914,6 @@ console.log(slidingDialog.animate); // undefined
 
 ## Articles
 
-* [Simple JavaScript Inheritance (Resig Inheritance)](http://ejohn.org/blog/simple-javascript-inheritance/)
 * [Sanity Check: Object Creation Performance](http://blog.getify.com/sanity-check-object-creation-performance/)
 * [Three Different Kinds Of Prototypal OO][three_kinds_oo]
 * [JS Objects: De"construct"ion](http://davidwalsh.name/javascript-objects-deconstruction)

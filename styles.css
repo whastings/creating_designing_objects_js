@@ -38,6 +38,10 @@ h1, h2, h3 {
   font-size: 150%;
 }
 
+.slide-med {
+  padding-top: 10%;
+}
+
 .container:before,
 .container:after {
   content: " ";
