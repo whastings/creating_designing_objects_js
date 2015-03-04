@@ -71,8 +71,8 @@ class: slide-short
 
 # Ease of Use
 
-* Want a pattern or API that is concise and easy to use.
-* i.e. not this:
+* Want a pattern or API that is concise and easy to use
+* i.e. better than this:
 
 ```javascript
 var Dialog = ...;
@@ -105,13 +105,13 @@ Modal.prototype.close = function() {
 
 # Performance
 
-* We don't want it to suffer.
+* We don't want it to suffer
 * But we don't want to sacrifice power for premature optimizations
 * Consider alternatives before restricting your object-creation strategy
   (e.g. [object pools][pools]).
 
 >*...if you're only creating a few objects (and by that, I mean 100 or less),
-the performance of creating them is basically irrelevant.  If you’ve been led
+the performance of creating them is basically irrelevant.  If you've been led
 to believe you need to use prototype, new, and class style coding in JS to get
 maximum object creation performance for just a couple of objects, you need to
 set such silliness aside.* -- Kyle Simpson, [Sanity Check: Object Creation
@@ -150,13 +150,14 @@ class: center, middle
 * But there are other architectures that prototypes enable
   * e.g. [**OLOO**][oloo] (Objects Linked to Other Objects)
 * Implemented via constructors or `Object.create()`
-* Some argue [it's behavior delegation, not inheritance][js_obj_article].
+* Some argue [it's behavior delegation, not inheritance][js_obj_article]
 
 [oloo]: https://github.com/getify/You-Dont-Know-JS/blob/master/this%20&amp;%20object%20prototypes/ch6.md
 [js_obj_article]: http://davidwalsh.name/javascript-objects
 
 ???
 
+* Use mechanism built in
 * Usually classical: Types + instances
 * Other architectures: OLOO
   * Peers, not parent/children
@@ -173,32 +174,33 @@ class: center, middle
 
 .col-half[
 ```javascript
-var Dialog = function(title, body) {
-  this.title = title;
-  this.body = body;
+var Dialog = function(el) {
+  this._el = el;
+  this._open = false;
 };
 
 Dialog.prototype.close = function() {
+  this._open = false;
   // ...
 };
 
 Dialog.prototype.open = function() {
+  this._open = true;
   // ...
 };
 
 var dialog = new Dialog(
-  'Profile',
-  renderedTemplate
+  document.querySelector('#dialog-el');
 );
 ```
 ]
 
 .col-half[
-* Require use of `new` or internal check.
-* Add extra step to reach prototype object (`.prototype`).
-* Encourage dev to think in classical mindset.
-* Obscure prototypal mechanism that JS actually uses.
-* Verbose.
+* Require use of `new` or internal check
+* Add extra step to reach prototype object (`.prototype`)
+* Encourage dev to think in classical mindset
+* Obscure prototypal mechanism that JS actually uses
+* Verbose
 * That said, are usually best optimized (e.g. [V8 hidden classes][v8])
 ]
 
@@ -229,8 +231,9 @@ function inherit(child, parent) {
   child.prototype.constructor = parent;
 }
 
-var SlidingDialog = function(title, body) {
-  Dialog.call(this, title, body);
+var SlidingDialog = function(el, slideClass) {
+  Dialog.call(this, el);
+  this._slideClass = slideClass;
   // ...
 };
 
@@ -246,9 +249,9 @@ SlidingDialog.prototype.open = function() {
 ]
 
 .col-one-third[
-* Too manual.
-* Mimicks classical inheritance.
-* Calling super is ugly and unwieldy.
+* Too manual
+* Mimics classical inheritance
+* Calling super is ugly and unwieldy
 ]
 
 ???
@@ -270,7 +273,7 @@ Eric Elliott, [Programming JavaScript Applications][pja]
 to the details of how your object gets instantiated.* -- Eric Elliott, [The Two
 Pillars of JavaScript, Part 1][two_pillars]
 
-*JavaScript doesn’t need constructor functions because any function can return a
+*JavaScript doesn't need constructor functions because any function can return a
 new object. With dynamic object extension, object literals and
 `Object.create()`, we have everything we need — with none of the mess.* -- Eric
 Elliott, [The Two Pillars of JavaScript, Part 1][two_pillars]
@@ -294,28 +297,36 @@ Simpson, [JS Objects: De"construct"ion][deconstruction]
 # Prototypal Inheritance
 ## `Object.create()`
 
-* Work directly with prototype objects.
-* Cooperate with JS's prototypal nature.
-* Create object with prototype as any other object.
-* Initialization can be captured in method on prototype.
-* Can wrap `Object.create()` and init call in a factory function.
-
+.col-half[
 ```javascript
 var Dialog = {
-  init: function(title, body) {
-    this.title = title;
+  init: function(el) {
+    this._el = el;
+    this._open = false;
     // ...
   },
   open: function() {
+    this._open = true;
     // ...
-  }
+  },
+  // ...
 };
-var createDialog = function(body, title) {
+
+function createDialog(el) {
   var dialog = Object.create(Dialog);
-  dialog.init(body, title);
+  dialog.init(el);
   return dialog;
-}
+};
 ```
+]
+
+.col-half[
+* Work directly with prototype objects
+* Cooperate with JS's prototypal nature
+* Create object with any other object as prototype
+* Initialization can be captured in method on prototype
+* Can wrap `Object.create()` and init call in a factory function
+]
 
 ???
 
@@ -334,16 +345,24 @@ var createDialog = function(body, title) {
 ```javascript
 var SlidingDialog = Object.create(Dialog);
 
-SlidingDialog.init = function(title, body) {
-  Dialog.init.call(this, title, body);
+SlidingDialog.init = function(el, slideClass) {
+  Dialog.init.call(this, el);
+  this._slideClass = slideClass;
 };
 
 SlidingDialog.open = function() {
   Dialog.open.call(this);
+  this._animate();
   // ...
 };
 
 SlidingDialog.close = function() {
+  Dialog.close.call(this);
+  this._animate();
+  // ...
+};
+
+SlidingDialog._animate = function() {
   // ...
 };
 ```
@@ -358,14 +377,14 @@ SlidingDialog.close = function() {
 
 # Concatenative Inheritance
 
-* Extending type or instance with properties from multiple source types or objects.
+* Extending type or instance with properties from multiple source types or objects
 * a.k.a. Mixins
 * Composing new types from existing ones
-* Avoids perils of classical, single-inheritance hierarchies
+* More flexible than classical, single-inheritance hierarchies
 * Takes advantage of JS's *dynamic runtime object extension*
 * Gives power of another full language feature like Ruby's modules or Scala's traits
 * Just needs a simple function like `_.extend()`
-* Can be combined with prototypal inheritance.
+* Can be combined with prototypal inheritance
 
 >*Single-­parent hierarchies are rarely capable of describing all possible use
 cases. Eventually, all hierarchies are "wrong" for new uses &mdash; a problem that
@@ -442,12 +461,13 @@ _.extend(Post, Commentable, Likeable);
 class: slide-short
 # Encapsulation Patterns
 
-* Keep public API clean.
-* Hide implementation details.
-* Encourage intended use.
+* Keep public API clean
+* Hide implementation details
+* Encourage intended use
 
 ???
 
+* Addressed code organization and reuse
 * Patterns for:
   * Private state
   * implementation hidden
@@ -462,9 +482,10 @@ class: slide-short
 
 .col-half[
 ```javascript
-Dialog = {
+var SlidingDialog = {
   // ...
   open: function() {
+    // ...
     this._animate();
     // ...
   },
@@ -495,7 +516,7 @@ Dialog = {
 
 .col-half[
 ```javascript
-function createDialog(title, body) {
+function createDialog(el) {
   var open = false;
 
   function init() {
@@ -547,10 +568,10 @@ function createDialog(title, body) {
 
 .col-half[
 ```javascript
-window.Dialog = (function() {
+window.SlidingDialog = (function() {
   var Dialog = {
     init: function(el) {
-      this.el = el;
+      this._el = el;
       // ...
     },
     // ...
@@ -564,7 +585,7 @@ window.Dialog = (function() {
   /*** Private Methods: ***/
 
   function animate() {
-    var el = this.el;
+    var el = this._el;
     // ...
   }
 
@@ -576,7 +597,7 @@ window.Dialog = (function() {
 .col-half[
 * Gives truly private methods
 * But doesn't protect state
-* Requires remembering to use `call()` for private methods.
+* Requires remembering to use `call()` for private methods
 ]
 
 ???
@@ -596,79 +617,6 @@ class: center, middle
 ???
 
 * End w/ implementations
-
----
-
-# Resig Inheritance
-
-**[ejohn.org/blog/simple-javascript-inheritance][resig]**
-
-```javascript
-var Dialog = Class.extend({
-  init: function(el) {
-    this.el = el;
-    // ...
-  },
-  open: function() {
-    this.open = true;
-    // ...
-  }
-});
-
-var SlidingDialog = Dialog.extend({
-  init: function(el) {
-    this._super(el);
-  },
-  open: function() {
-    this._super();
-    this._animate();
-  },
-  _animate: function() {
-    // ...
-  }
-});
-
-var slidingDialog = new SlidingDialog(
-  document.querySelector('#dialog-el')
-);
-```
-
-[resig]: http://ejohn.org/blog/simple-javascript-inheritance/
-
-???
-
-* `Class.extend()` takes props
-* Returns constructor
-* `init()` = initialization
-* Each "class" gets `extend()`
-* Nifty `this._super()`
-
----
-
-# Resig Inheritance
-
-.col-half[
-## Pros
-* Easy `super` calls
-* Easy "subclassing" with `.extends()`
-]
-
-.col-half[
-## Cons
-* Very classically-oriented
-* Instantiating requires `new`
-* No real state or method privacy
-* No built-in support for Concatenative Inheritance
-]
-
-???
-
-* Dated: Posted in 2008
-* But good pioneer
-* Easy super and `extends()`
-* Very classical
-* Requires `new`
-* No mixin support
 
 ---
 
@@ -713,6 +661,7 @@ var SlidingDialog = Dialog.extend(
       base.open.call(this);
       this._animate();
     },
+    // ...
     _animate: function() {
       // ...
     }
@@ -773,15 +722,15 @@ var slidingDialog = new SlidingDialog(
 ```javascript
 class Dialog {
   constructor(el) {
-    this.el = el;
-    this.open = false;
+    this._el = el;
+    this._open = false;
   }
   close() {
-    this.open = false;
+    this._open = false;
     // ...
   }
   open() {
-    this.open = true;
+    this._open = true;
     // ...
   }
 }
@@ -838,7 +787,7 @@ var slidingDialog = new SlidingDialog(
 
 .col-half[
 ## Cons
-* Not true classes, but syntactic sugar over constructors and prototypes.
+* Not true classes, but syntactic sugar over constructors and prototypes
 * Not yet [well-supported](http://kangax.github.io/compat-table/es6/#class)
 * Some features hard to transpile (e.g. super calls, extending built-ins)
 * No mechanism for making state or methods private
@@ -866,10 +815,8 @@ var slidingDialog = new SlidingDialog(
 .col-half[
 ```javascript
 var dialog = stampit()
-  .state({
-    el: null,
-    title: 'Dialog' // Default value.
-  })
+  // Default state values.
+  .state({el: null, title: 'Dialog'})
   .methods({
     setTitle: function(title) {
       this.title = title;
@@ -881,6 +828,7 @@ var dialog = stampit()
     return stampit.mixIn(this, {
       close: function() {
         open = false;
+        // ...
       },
       isOpen: function() {
         return open;
@@ -901,6 +849,7 @@ var myDialog = dialog({
     .querySelector('#dialog-el'),
   title: 'Compose Message'
 });
+
 console.log(myDialog.isOpen()); // false
 myDialog.open();
 console.log(myDialog.isOpen()); // true
@@ -928,6 +877,7 @@ console.log(myDialog.isOpen()); // true
 ## Pros
 * Supports [concatenative, prototypal, and functional inheritance][three_kinds_oo]
 * Produces factory functions (no need for `new`)
+* Supports state &amp; method privacy via `.enclose()`
 * Can compose stamps together with `stampit.compose()`
 ]
 
@@ -975,7 +925,7 @@ var Dialog = Protomatter.create({
 
 .col-half[
 ```javascript
-var SlidingDialog = Protomatter.create({
+var SlidingDialog = Dialog.extend({
   init: function(el, slideClass) {
     this.callSuper('init', el);
     this.slideClass = slideClass;
@@ -1003,8 +953,8 @@ var slidingDialog = SlidingDialog.create(
   'slide-down'
 );
 console.log(slidingDialog.el); // undefined
-console.log(slidingDialog.open); // undefined
 console.log(slidingDialog.slideClass); // undefined
+console.log(slidingDialog.animate); // undefined
 ```
 ]
 
@@ -1029,6 +979,7 @@ console.log(slidingDialog.slideClass); // undefined
 .col-half[
 ## Pros
 * Truly private properties and methods
+* Work directly with prototypes
 * Concatenative Inheritance support via `Protomatter.compose()`
 * Easy super calls
 ]
