@@ -1,6 +1,10 @@
 window.addEventListener('load', function() {
-  var codes = toArray(document.querySelectorAll('.remark-code'));
+  var codeContainers = toArray(document.querySelectorAll('.container.code')),
+      codes = toArray(document.querySelectorAll(
+        '.remark-slide-content > div > pre > .remark-code'
+      ));
   codes.forEach(processCode);
+  codeContainers.forEach(processCode);
 
   function processCode(code) {
     var lines = toArray(code.querySelectorAll('.remark-code-line')),
