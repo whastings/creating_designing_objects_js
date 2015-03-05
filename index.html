@@ -27,22 +27,37 @@ Follow along: [go/creating_designing_objects_js][slides]
 
 ---
 
-class: slide-med
+class: slide-short
 # Traditional JS OO
 
-* Model types like classes with constructors
+* Model types like classes using constructors
 * Reuse code with single-parent inheritance hierarchies
-* But prototypal inheritance with constructors is outdated
-* Only using single-parent inheritance limits code reuse
-* No use of encapsulation beyond convention
+* Mimic OO in class-based languages
+* Denote privacy with code conventions
 
 ???
 
 * Traditional way
-  * Constructors
+  * Constructors = Classes
   * Single-parent inheritance
+
+---
+
+class: slide-short
+
+# Traditional JS OO
+
+* But prototypal inheritance with constructors is outdated and flawed
+* Only using single-parent inheritance limits code reuse
+* Conventions aren't true encapsulation
+
+???
+
+* Language and uses evolved
 * Better way than constructors
 * Single parent = rigid hierarchies
+  * Poor reuse of code
+  * Tight coupling
 * No privary for
   * State
   * Implementation
@@ -150,7 +165,8 @@ SlidingDialog.prototype.open = function() {
 
 * Verbose
 * ES b4 5 = `inherit()`
-* ES5+ = `Object.create()`
+* LINES 15 - 16: ES5+ = `Object.create()`
+* LINE 19: Painful super calls
 
 ---
 
@@ -161,11 +177,9 @@ thinking in classical OO mode. The constructor becomes analogous to a class.* --
 Eric Elliott, [Programming JavaScript Applications][pja]
 
 *Constructors violate the open/closed principle because they couple all callers
-to the details of how your object gets instantiated.* -- Eric Elliott, [The Two
-Pillars of JavaScript, Part 1][two_pillars]
-
-*JavaScript doesn't need constructor functions because any function can return a
-new object.* -- Eric Elliott, [The Two Pillars of JavaScript, Part 1][two_pillars]
+to the details of how your object gets instantiated... JavaScript doesn't need
+constructor functions because any function can return a new object.* -- Eric
+Elliott, [The Two Pillars of JavaScript, Part 1][two_pillars]
 
 [pja]: http://shop.oreilly.com/product/0636920033141.do
 [two_pillars]: https://medium.com/javascript-scene/the-two-pillars-of-javascript-ee6f3281e7f3
@@ -258,7 +272,7 @@ SlidingDialog._animate = function() {
 
 * Simpler, more concise
 * Still some boilerplate
-* Super calls = slightly shorter
+* LINE 9: Super calls = slightly shorter
 
 ---
 
@@ -283,7 +297,8 @@ Applications][pja]
 * a.k.a. Mixins
 * Form on inheritance
 * Multiple inheritance
-* More flexible
+* Alternative to single-parent
+  * More flexible
   * Separate horizontal concerns
   * Then, compose
 * Possible: dynamic object extension
@@ -342,6 +357,10 @@ _.extend(Post, Commentable, Likeable);
   * Many types can be Commentable
   * Many types can be Likeable
 * Prototypes = easy to mix in
+* Would be hard w/ single-parent
+* Great pattern
+* Underutilized
+* Support = good implementation
 
 ---
 
@@ -443,10 +462,14 @@ function createDialog(el) {
 
 * Most common way
 * Use closure to hide
-* Return object w/ public methods
+  * LINE 2: Hidden state
+  * LINE 8: Private method
+* LINE 22: Return object w/ public methods
 * Issues:
   * Free variables hard to distinguish
   * Inheritance and mixins?
+    * Add to public object
+    * But can't access closured stuff
 
 ---
 
@@ -489,8 +512,8 @@ window.SlidingDialog = (function() {
 
 ???
 
-* Private methods = closured functions
-* Must pass context along
+* LINE 17: Private methods = closured functions
+* LINE 10: Must pass context along
 * Truly private methods
 * But doesn't protect state
 * Remembering `.call()`
@@ -569,10 +592,10 @@ var slidingDialog = new SlidingDialog(
 
 * `Fiber.extend()` takes function
 * Function :: props
-* Returns constructor
-* Also `init()`
+* LINE 37: Returns constructor
+* LINES 3, 20: Also `init()`
 * Each class gets `extend()`
-* Passes `base` for super
+* LINES 23, 27: Passes `base` for super
 
 ---
 
@@ -655,9 +678,9 @@ var slidingDialog = new SlidingDialog(
 
 * Really a standard
 * New keywords: `class`, `extends`, `super`
-* `constructor()` for initialization
-* `super()` = superclass constructor
-* `super.method()` calls method in superclass
+* LINE 2: `constructor()` for initialization
+* LINE 17: `super()` = superclass constructor
+* LINE 22: `super.method()` calls method in superclass
 
 ---
 
@@ -751,12 +774,13 @@ console.log(myDialog.isOpen());
 ???
 
 * Stamps = factory functions
-* `.methods()` adds public methods
-* `.state()` defines props and defaults
+* LINE 3: `.state()` defines props and defaults
   * Mixed into instance
+* LINE 4: `.methods()` adds public methods
 * `.enclose()`
   * Private props and methods
-  * Privileged methods on instance
+    * LINE 10: open
+  * LINES 12 - 24: Privileged methods on instance
 
 ---
 
@@ -833,9 +857,8 @@ var SlidingDialog = Dialog.extend({
 });
 ```
 ]
-]
 
-.pre-no-margin[
+.container[
 ```javascript
 var slidingDialog = SlidingDialog.create(
   document.querySelector('#dialog-el'),
@@ -846,17 +869,24 @@ console.log(slidingDialog.slideClass); // undefined
 console.log(slidingDialog.animate); // undefined
 ```
 ]
+]
 
 ???
 
 * `Protomatter.create()` takes props
   * Returns prototype
-* Prototype has `create()`
-* Prototype has `extend()`
-* Has `callSuper()`
+* LINE 33: Prototype has `create()`
+  * Also uses `init()`
+* LINE 16: Prototype has `extend()`
+* LINES 18, 23: Has `callSuper()`
 * Privacy = selling point
   * `this.prop` is inaccessible
+    * LINES: 4, 19
+    * LINES: 37, 38
   * `private: {}` are inaccessible
+    * LINE: 27
+    * LINE: 24
+    * LINE: 39
   * Magic: Two objects created
     * One w/ public methods, returned to the outside
     * One w/ private state props and methods
@@ -922,6 +952,7 @@ class: slide-short
 * [Three Different Kinds Of Prototypal OO][three_kinds_oo]
 * [JS Objects: De"construct"ion](http://davidwalsh.name/javascript-objects-deconstruction)
 * [The Two Pillars of JavaScript, Part 1](https://medium.com/javascript-scene/the-two-pillars-of-javascript-ee6f3281e7f3)
+* [Classes in ECMAScript 6 (final semantics)][es6classes]
 * [Implementing Object Privacy in Protomatter.js][protomatter_privacy]
 
     </textarea>
