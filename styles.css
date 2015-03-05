@@ -50,6 +50,10 @@ h1, h2, h3 {
   padding-top: 10%;
 }
 
+.container {
+  clear: both;
+}
+
 .container:before,
 .container:after {
   content: " ";
