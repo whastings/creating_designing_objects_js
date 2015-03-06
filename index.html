@@ -419,7 +419,7 @@ var SlidingDialog = {
 .col-half[
 ```javascript
 function createDialog(el) {
-  var open = false;
+  var isOpen = false;
 
   function init() {
     // ...
@@ -428,8 +428,9 @@ function createDialog(el) {
     // ...
   }
   function open() {
-    open = true;
+    var openClass = '...';
     // ...
+    isOpen = true;
   }
   // ...
   init();
